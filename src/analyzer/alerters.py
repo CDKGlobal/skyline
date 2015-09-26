@@ -54,14 +54,20 @@ def alert_pagerduty(alert, metric):
 
 
 def alert_hipchat(alert, metric):
-    import hipchat
-    hipster = hipchat.HipChat(token=settings.HIPCHAT_OPTS['auth_token'])
+    import hipchat_v2
+    hipster = hipchat_v2.HipChat(url=settings.HIPCHAT_OPTS['url'])
     rooms = settings.HIPCHAT_OPTS['rooms'][alert[0]]
     link = settings.GRAPH_URL % (metric[1])
 
     for room in rooms:
-        hipster.method('rooms/message', method='POST', parameters={'room_id': room, 'from': 'Skyline', 'color': settings.HIPCHAT_OPTS['color'], 'message': 'Anomaly: <a href="%s">%s</a> : %s' % (link, metric[1], metric[0])})
-
+        hipster.message_room(
+          room_id = room['room_id'],
+          message = 'Anomaly: <a href="%s">%s</a> : %s' % (link, metric[1], metric[0]),
+          message_format = 'html',
+          color = room['color'],
+          notify = room['notify'], 
+          token = room['token']
+        )
 
 def trigger_alert(alert, metric):
 
